@@ -1,0 +1,27 @@
+# ==========================================================
+#  opencode-headroom-plugin — .gitignore
+# ==========================================================
+
+# --- Secrets & ambiente locale (MAI committare) -----------
+.env
+.env.*
+py_var.sh
+py_env.sh
+key.json
+*.pem
+source_app/
+MEMORY.md
+
+# --- Node / npm --------------------------------------------
+node_modules/
+*.tgz
+npm-debug.log*
+
+# --- Log & artefatti runtime ------------------------------
+*.log
+tmp/
+
+# --- Editor / OS ------------------------------------------
+.DS_Store
+.idea/
+.vscode/
