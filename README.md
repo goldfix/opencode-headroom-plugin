@@ -108,11 +108,23 @@ Compressing sends the tool results' content to the configured `proxyUrl`. Becaus
 
 When Headroom compresses a tool result, it leaves a marker shaped like `[N items compressed to M. Retrieve more: hash=...]` (or `<<ccr:hash...>>`). The plugin registers a **`headroom_retrieve(hash)`** tool that the model can call to fetch the full original from Headroom's CCR cache (TTL 1800s) — no need to install Headroom's official MCP server.
 
-## Why not a plain HTTP proxy
+## How it works
 
-An earlier version of this plugin rewrote native HTTP requests' URL toward the Headroom proxy (the same way the official `headroom-opencode` package does for OpenCode v1). It worked for Anthropic/OpenAI/Google Vertex, but **not for AWS Bedrock**: OpenCode's `amazon-bedrock` provider uses AWS's Converse API, signed with SigV4 — Headroom has no dedicated route for that request shape, and compressing the body would have invalidated the signature anyway.
+### ❌ What doesn't work: a plain HTTP proxy
 
-Compressing at the message level (this plugin) avoids the problem at the root: it acts **before** OpenCode translates messages into the provider's native format and signs them, so it works identically for any provider. Full details in `MEMORY.md`.
+The obvious approach — and the one the official `headroom-opencode` package uses for OpenCode v1 — is to rewrite the native HTTP request's URL so it goes through the Headroom proxy, leaving path/method/headers/body otherwise intact. That works for Anthropic/OpenAI/Google Vertex, but **breaks AWS Bedrock**: OpenCode's `amazon-bedrock` provider calls AWS's **Converse** API, and the request is signed with **AWS SigV4** *before* it reaches the proxy. If the proxy then compresses the body, the signature no longer matches the (now different) content, and AWS rejects the request outright.
+
+![Naive HTTP proxy rewrite -- breaks AWS Bedrock](assets/workflow-naive-proxy.svg)
+
+There's no clean fix within that approach: re-signing the request after compression would need a second, provider-aware hop (essentially a full SigV4-capable gateway) just for Bedrock — not transparent, not generalizable to whatever provider comes next.
+
+### ✅ Current implementation: compression at the message level
+
+Instead of touching HTTP traffic, the plugin hooks into `session.hook("context", ...)` — the point where OpenCode assembles the session's messages in its **provider-agnostic** shape, before "lowering" them to the provider's native protocol (Converse, Chat Completions, GenerateContent, ...) and, crucially, **before** that request is signed. Only `role: "tool"` parts are extracted, filtered (size, protected tools) and sent to Headroom's stateless `POST /v1/compress`; the compressed text is written back into the same `ToolResultPart` only after validating that role and `tool_call_id` didn't change. Everything downstream — provider lowering, SigV4 signing, transport — happens exactly as before, just on an already-compressed body.
+
+![Current implementation -- message-level compression via session.hook(context)](assets/workflow-current-implementation.svg)
+
+This works identically for every provider, Bedrock included, because it never touches the native HTTP body or its signature. Full architectural details and alternatives considered in `MEMORY.md`.
 
 ## Sources
 
