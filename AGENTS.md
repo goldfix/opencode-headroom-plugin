@@ -71,6 +71,7 @@ Alternatives considered and discarded:
 ## 5. Operating rules
 
 - **Do not run the `opencode` binary** or other commands outside this folder, unless strictly necessary.
+- **Never perform operations against external accounts/services** (npm publish/login, git remote push/tag, gcloud, or similar) — the user handles those themselves. Preparing and verifying everything up to that point (dry-runs, lint/test checks, diffs) is fine and expected; the actual authenticated/external-facing command is not.
 - **Clean, lean, well-documented code**: comments only where the behavior isn't obvious (see `src/bridge.js` for the exclusion rules — files/images are never compressed, `system` messages are never sent to Headroom).
 - Always separate the pure, testable logic (`bridge.js`, `config.js`) from the plugin entrypoint that imports `@opencode/plugin` (`src/index.js`) and from the HTTP client (`client.js`), so unit tests need neither a real OpenCode server nor a running Headroom proxy.
 - For any doubt about OpenCode v2's API/schemas, consult `source_app/opencode` first (grep `packages/ai/src/schema/messages.ts` for `Message`/`ToolResultPart`, `packages/plugin` for the hooks) and the MCP docs (`docs-mcp-server`, `opencode` library); for Headroom, the `headroom` library on the same MCP; for an already-tested porting reference, `source_app/pi-mimir/packages/pi-headroom`.
