@@ -1,7 +1,16 @@
 {
   "name": "opencode-headroom-plugin",
-  "version": "0.1.0",
-  "description": "Plugin OpenCode v2 che comprime in modo trasparente i tool result di sessione tramite Headroom (POST /v1/compress), a livello di messaggio anziché di trasporto HTTP — funziona con qualunque provider, incluso AWS Bedrock.",
+  "version": "1.0.0",
+  "description": "OpenCode v2 plugin that transparently compresses large tool results via Headroom at the message level — works with any provider, including AWS Bedrock.",
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "headroom",
+    "llm",
+    "context-compression",
+    "token-optimization",
+    "aws-bedrock"
+  ],
   "type": "module",
   "license": "MIT",
   "author": "pietro partescano <goldfix@users.noreply.github.com>",
@@ -16,6 +25,12 @@
   "exports": {
     ".": "./src/index.js"
   },
+  "files": [
+    "index.js",
+    "src",
+    "scripts",
+    "assets"
+  ],
   "scripts": {
     "test": "node --test test/",
     "plugin:install": "bash scripts/install.sh",
