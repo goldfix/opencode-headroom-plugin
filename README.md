@@ -1,5 +1,12 @@
 # opencode-headroom-plugin
 
+---
+
+Support me – buy me a coffee! :)
+[PayPal](https://www.paypal.com/donate/?hosted_button_id=F34KU49T4UQGL)
+
+---
+
 A plugin for **OpenCode v2** that transparently compresses **large tool results** in a session via **Headroom**, without touching the provider configuration already set up in OpenCode and without any provider-specific limitations (it also works with **AWS Bedrock**).
 
 It doesn't modify `opencode.json`/`opencode.jsonc`, doesn't create fake providers, and doesn't route provider HTTP traffic through a proxy: it hooks into `session.hook("context", ...)`, the point where OpenCode assembles the session's messages **before** translating them into the provider's native format (Anthropic Messages, OpenAI Chat, Bedrock Converse, ...) and before signing the request. Only tool results (`role: "tool"`) are sent to Headroom for compression — never user/assistant text, never system messages.
